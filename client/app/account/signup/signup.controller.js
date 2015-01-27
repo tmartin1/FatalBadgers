@@ -1,7 +1,11 @@
 'use strict';
 
 angular.module('badgerApp')
+<<<<<<< HEAD
   .controller('SignupCtrl', function ($scope) {
+=======
+  .controller('SignupCtrl', function ($scope, Auth, $location) {
+>>>>>>> c9ca65f543da6d5e0f8a8447b5bb159f3d96c0d1
     $scope.user = {};
     $scope.errors = {};
 
