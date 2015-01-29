@@ -8,22 +8,18 @@ angular.module('badgerApp')
 >>>>>>> c9ca65f543da6d5e0f8a8447b5bb159f3d96c0d1
     $scope.user = {};
     $scope.errors = {};
+    $scope.minPasswordLength = 3;
 
     $scope.accountOptions = [ 'Client', 'Worker' ];
     $scope.user.accountType = $scope.accountOptions[0];
-
-    $scope.workerQuestions = [
-    	{ field: 'skills', text: 'What are your skills/professions?' },
-    	{ field: 'rate', text: 'What is your hourly rate?' },
-    	{ field: 'advert', text: 'Anything else you would like to say about your work?' }
-    ];
 
     $scope.register = function(form) {
       $scope.submitted = true;
 
       if(form.$valid) {
-      	var newUser = {
+        var newUser = {
           name: $scope.user.name,
+          location: $scope.user.location,
           email: $scope.user.email,
           password: $scope.user.password,
           accountType: $scope.user.accountType
@@ -31,9 +27,9 @@ angular.module('badgerApp')
 
         // Add worker data if user is creating a worker account.
         if ($scope.user.accountType === 'Worker') {
-        	newUser.skills = $('#skills'),
-        	newUser.rate = $('#rate'),
-        	newUser.advert = $('#advert')
+          newUser.skills = $scope.user.skills;
+          newUser.rate = $scope.user.rate;
+          newUser.advert = $scope.user.advert;
         }
 
         Auth.createUser(newUser)

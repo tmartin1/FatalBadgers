@@ -7,7 +7,8 @@ exports.Workers = exports.ihammerDatabase.define("workers", {
   password: Sequelize.STRING,
   location: Sequelize.STRING,
   email: Sequelize.STRING,
-  'avg_rating': Sequelize.STRING
+  'avg_rating': Sequelize.STRING,
+  'img_url': Sequelize.STRING
 });
 
 // define the clients database
@@ -16,7 +17,8 @@ exports.Clients = exports.ihammerDatabase.define("clients", {
   password: Sequelize.STRING,
   location: Sequelize.STRING,
   email: Sequelize.STRING,
-  'avg_rating': Sequelize.STRING
+  'avg_rating': Sequelize.STRING,
+  'img_url': Sequelize.STRING
 });
 
 // define the client_review database
@@ -42,11 +44,12 @@ exports.Jobs = exports.ihammerDatabase.define("jobs", {
   budget: Sequelize.INTEGER,
   summary: Sequelize.STRING,
   'skills_needed': Sequelize.STRING,
-  status: Sequelize.STRING
+  status: Sequelize.STRING,
+  'img_url': Sequelize.STRING
 });
 
 // create all associations between databases specified above
-exports.Workers.sync(({force:true})).complete(function(err) {
+exports.Workers.sync().complete(function(err) {
   if(err) {
     console.log('Error creating Workers:', err)
   } else {
@@ -54,7 +57,7 @@ exports.Workers.sync(({force:true})).complete(function(err) {
   }
 });
 
-exports.Clients.sync(({force:true})).complete(function(err) {
+exports.Clients.sync().complete(function(err) {
   if(err) {
     console.log('Error creating Clients:', err)
   } else {
@@ -62,7 +65,7 @@ exports.Clients.sync(({force:true})).complete(function(err) {
   }
 });
 
-exports.WorkerReviews.sync(({force:true})).complete(function(err) {
+exports.WorkerReviews.sync().complete(function(err) {
   if(err) {
     console.log('Error creating Worker Reviews:', err)
   } else {
@@ -70,7 +73,7 @@ exports.WorkerReviews.sync(({force:true})).complete(function(err) {
   }
 });
 
-exports.ClientReviews.sync(({force:true})).complete(function(err) {
+exports.ClientReviews.sync().complete(function(err) {
   if(err) {
     console.log('Error creating Client Reviews:', err)
   } else {
@@ -78,7 +81,7 @@ exports.ClientReviews.sync(({force:true})).complete(function(err) {
   }
 });
 
-exports.WorkersJobs.sync(({force:true})).complete(function(err) {
+exports.WorkersJobs.sync().complete(function(err) {
   if(err) {
     console.log('Error creating Workers Jobs:', err)
   } else {
@@ -86,7 +89,7 @@ exports.WorkersJobs.sync(({force:true})).complete(function(err) {
   }
 });
 
-exports.Jobs.sync(({force:true})).complete(function(err) {
+exports.Jobs.sync().complete(function(err) {
   if(err) {
     console.log('Error creating Jobs:', err)
   } else {

@@ -29,6 +29,9 @@ grunt serve
 ```
 Browser window will open at localhost:9000 with the app.
 
+In order for the photo upload directive to work correctly, you will need to change aws.example.json > aws.json, and fill
+in your accessKeyId, secretAccessKey, region, and bucket.
+
 ## Requirements
 
 - Node 0.10.x
@@ -36,6 +39,13 @@ Browser window will open at localhost:9000 with the app.
 - AngularJS
 
 ## Development
+
+When installing locally, running grunt serve will open the app:
+
+```sh
+grunt serve
+```
+Browser window will open automatically at localhost:9000.
 
 ### Installing Dependencies
 
@@ -74,9 +84,11 @@ Use grunt test:e2e to have protractor go through tests located in the e2e folder
 
 ### Roadmap
 
-View the project roadmap [here](LINK_TO_PROJECT_ISSUES)
+View the [project roadmap](https://github.com/FatalBadgers/FatalBadgers/issues)
 
 
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
+
+When pull requests are accepted, the changes are automatically visible on our [staging server] (http://staging.ihammer.org)
