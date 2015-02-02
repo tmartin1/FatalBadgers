@@ -1,51 +1,178 @@
-var Sequelize = require("sequelize");
+var Sequelize = require("sequelize"),
+  bcrypt = require('bcrypt-nodejs'),
+  Q = require('q');
+
 exports.ihammerDatabase = require('../config/environment').mysql;
 
 // define the workers database
 exports.Workers = exports.ihammerDatabase.define("workers", {
   name: Sequelize.STRING,
   password: Sequelize.STRING,
-  location: Sequelize.STRING,
+  location: {
+    type: Sequelize.STRING,
+    defaultValue: 'No location provided'
+  },
   email: Sequelize.STRING,
-  'avg_rating': Sequelize.STRING,
-  'img_url': Sequelize.STRING
+  skills: Sequelize.TEXT,
+  'hourly_rate': {
+    type: Sequelize.BIGINT,
+    defaultValue: 0
+  },
+  'avg_rating': {
+    type: Sequelize.STRING,
+    defaultValue: 'No rating given yet'
+  },
+  'img_url': {
+    type: Sequelize.STRING,
+    defaultValue: '/../../assets/images/default.png'
+  },
+  summary: {
+    type: Sequelize.STRING,
+    defaultValue: 'No summary provided'
+  },
+  'account_type': {
+    type: Sequelize.STRING,
+    defaultValue: 'Worker'
+  },
+  'worker_reviewId': {
+    type: Sequelize.STRING,
+    defaultValue: 'Client'
+  }
+}, {
+  instanceMethods: {
+    comparePasswords: function(candidatePassword) {
+      var defer = Q.defer();
+      var savedPassword = this.password;
+      bcrypt.compare(candidatePassword, savedPassword, function(err, isMatch) {
+        if(err) {
+          defer.reject(err);
+        } else {
+          defer.resolve(isMatch);
+        }
+      });
+      return defer.promise;
+    }
+  }, classMethods: {
+    setPassword: function(password) {
+      var defer = Q.defer();
+      bcrypt.genSalt(10, function(err, salt) {
+        return bcrypt.hash(password, salt, null, function(err, encrypted) {
+          if(err) {
+            defer.reject(err);
+          } else {
+            defer.resolve(encrypted);
+          }
+        });
+      });
+      return defer.promise;
+    }
+  }
 });
 
 // define the clients database
 exports.Clients = exports.ihammerDatabase.define("clients", {
   name: Sequelize.STRING,
   password: Sequelize.STRING,
-  location: Sequelize.STRING,
+  location: {
+    type: Sequelize.STRING,
+    defaultValue: 'No location provided'
+  },
   email: Sequelize.STRING,
-  'avg_rating': Sequelize.STRING,
-  'img_url': Sequelize.STRING
+  'avg_rating': {
+    type: Sequelize.STRING,
+    defaultValue: 'No rating given yet'
+  },
+  'img_url': {
+    type: Sequelize.STRING,
+    defaultValue: '/../../assets/images/default.png'
+  },
+  summary: {
+    type: Sequelize.STRING,
+    defaultValue: 'No summary provided'
+  },
+  'account_type': {
+    type: Sequelize.STRING,
+    defaultValue: 'Client'
+  },
+  'client_reviewId': {
+    type: Sequelize.STRING,
+    defaultValue: 'Client'
+  }
+}, {
+  instanceMethods: {
+    comparePasswords: function(candidatePassword) {
+      var defer = Q.defer();
+      var savedPassword = this.password;
+      bcrypt.compare(candidatePassword, savedPassword, function(err, isMatch) {
+        if(err) {
+          defer.reject(err);
+        } else {
+          defer.resolve(isMatch);
+        }
+      });
+      return defer.promise;
+    }
+  }, classMethods: {
+    setPassword: function(password) {
+      var defer = Q.defer();
+      bcrypt.genSalt(10, function(err, salt) {
+        return bcrypt.hash(password, salt, null, function(err, encrypted) {
+          if(err) {
+            defer.reject(err);
+          } else {
+            defer.resolve(encrypted);
+          }
+        });
+      });
+      return defer.promise;
+    }
+  }
 });
 
 // define the client_review database
 exports.ClientReviews = exports.ihammerDatabase.define("client_reviews", {
   comment: Sequelize.STRING,
-  rating: Sequelize.INTEGER
+  rating: Sequelize.INTEGER,
+  clientId: Sequelize.INTEGER
 });
 
 // define the worker_reviews database
 exports.WorkerReviews = exports.ihammerDatabase.define("worker_reviews", {
   comment: Sequelize.STRING,
-  rating: Sequelize.INTEGER
+  rating: Sequelize.INTEGER,
+  workerId: Sequelize.INTEGER
 });
 
 // define the workers_jobs database
 exports.WorkersJobs = exports.ihammerDatabase.define("workers_jobs", {
+  workerId: Sequelize.INTEGER
 });
+
+// define the clients_jobs database
+exports.ClientsJobs = exports.ihammerDatabase.define("clients_jobs", {});
+
 
 // define the jobs database
 exports.Jobs = exports.ihammerDatabase.define("jobs", {
   title: Sequelize.STRING,
   applicants: Sequelize.INTEGER,
-  budget: Sequelize.INTEGER,
-  summary: Sequelize.STRING,
-  'skills_needed': Sequelize.STRING,
+  'hourly_rate': {
+    type: Sequelize.BIGINT,
+    defaultValue: 0
+  },
+  summary: {
+    type: Sequelize.STRING,
+    defaultValue: 'No summary provided'
+  },
+  'skills_needed': Sequelize.TEXT,
   status: Sequelize.STRING,
-  'img_url': Sequelize.STRING
+  'img_url': {
+    type: Sequelize.STRING,
+    defaultValue: '/../../assets/images/default.png'
+  },
+  clientId: Sequelize.INTEGER,
+  workerId: Sequelize.INTEGER,
+  workers_jobsId: Sequelize.INTEGER
 });
 
 // create all associations between databases specified above
@@ -89,6 +216,14 @@ exports.WorkersJobs.sync().complete(function(err) {
   }
 });
 
+exports.ClientsJobs.sync().complete(function(err) {
+  if(err) {
+    console.log('Error creating Clients Jobs:', err)
+  } else {
+    console.log('Clients Jobs database created successfully.')
+  }
+});
+
 exports.Jobs.sync().complete(function(err) {
   if(err) {
     console.log('Error creating Jobs:', err)
@@ -106,12 +241,17 @@ exports.Clients.hasMany(exports.ClientReviews);
 exports.ClientReviews.belongsTo(exports.Clients);
 
 //One to one relationship from jobs to clients
-exports.Jobs.hasOne(exports.Clients);
-exports.Clients.belongsTo(exports.Jobs);
+exports.Clients.hasMany(exports.Jobs);
+exports.Jobs.belongsTo(exports.Clients);
 
 //Many to many relationship from workers to jobs
-exports.Workers.hasMany(exports.Jobs, { through: "workers_jobs" });
-exports.Jobs.belongsToMany(exports.Workers, { through: "workers_jobs" });
+exports.Workers.hasMany(exports.Jobs, {through: "workers_jobs"});
+exports.Jobs.belongsToMany(exports.Workers, {through: "workers_jobs"});
+
+//Many to many relationship from clients to jobs
+exports.Clients.hasMany(exports.Jobs, {through: "clients_jobs"});
+exports.Jobs.belongsToMany(exports.Clients, {through: "clients_jobs"});
+
 
 exports.ihammerDatabase
   .authenticate()

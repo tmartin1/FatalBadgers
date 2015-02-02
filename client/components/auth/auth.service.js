@@ -3,38 +3,21 @@
 angular.module('badgerApp')
   // Set currentUser to an empty object and then they check if there is a cookie named (?) 'token'.
   // If it is then they call the User service method get, this should return a currentUser object.
-  .factory('Auth', function Auth($location, $rootScope, $http, User, $cookieStore, $q) {
+  .factory('Auth', function Auth($location, $rootScope, $http, User, $cookieStore) {
     var currentUser = {};
     if($cookieStore.get('token')) {
-      currentUser = User.get();
+      currentUser = $cookieStore.get('token');
     }
 
     return {
       // Authenticates user and saves token.
       // Returns a {Promise}.
-      login: function(user, callback) {
-        var cb = callback || angular.noop;
-        var deferred = $q.defer();
-
-        // TODO $hppt.post path will need to be created on the sever side, or changed to the correct path here once defined server side.
-        $http.post('/auth/local', {
-          email: user.email,
-          password: user.password,
-          accountType: user.accountType
-        }).
-        success(function(data) {
-          $cookieStore.put('token', data.token);
-          currentUser = User.get();
-          deferred.resolve(data);
-          return cb();
-        }).
-        error(function(err) {
-          this.logout();
-          deferred.reject(err);
-          return cb(err);
-        }.bind(this));
-
-        return deferred.promise;
+      login: function(user) {
+        return User.login(user, function(data) {
+          $cookieStore.put('token', data);
+          currentUser = data;
+          return user;
+        }).$promise;
       },
 
       // Delete access token and user info.
@@ -45,81 +28,47 @@ angular.module('badgerApp')
 
       // Creates a new user.
       // Returns a {Promise}.
-      createUser: function(user, callback) {
-        var cb = callback || angular.noop;
-        return User.save(user,
-          function(data) {
-            $cookieStore.put('token', data.token);
-            currentUser = User.get();
-            return cb(user);
-          },
-          function(err) {
-            this.logout();
-            return cb(err);
-          }.bind(this)).$promise;
+      createUser: function(user) {
+        return User.signup(user, function(data) {
+          $cookieStore.put('token', data);
+          currentUser = data;
+          return user;
+        }).$promise;
       },
 
       // Changes a user's password.
       // Returns a {Promise}.
-      changePassword: function(oldPassword, newPassword, callback) {
-        var cb = callback || angular.noop;
-        return User.editProfile({ id: currentUser._id }, {
+      changePassword: function(oldPassword, newPassword) {
+        return User.editProfile({id: currentUser.id}, {
           oldPassword: oldPassword,
           newPassword: newPassword
-        }, function(user) {
-          return cb(user);
-        }, function(err) {
-          return cb(err);
         }).$promise;
       },
 
       // Changes a user's profile fields (except password).
       // Returns a {Promise}.
-      editProfile: function(userObject, callback) {
-        var cb = callback || angular.noop;
+      editProfile: function(userObject) {
         return User.editProfile(userObject, function(user) {
-          return cb(user);
-        }, function(err) {
-          return cb(err);
+          return user;
         }).$promise;
       },
 
-      // Gets all available info on authenticated user
-      // Returns a user {Object}
-      getCurrentUser: function() {
-        return currentUser;
+      isAuth: function() {
+        return !!$cookieStore.get('token');
       },
 
-      // Check if a user is logged in.
-      // Returns a boolean.
-      isLoggedIn: function() {
-        return currentUser.hasOwnProperty('role');
+      getCurrentUser: function(callback){
+        return User.getUser({email: currentUser.email, accountType: currentUser.account_type}, function(user){
+          return user;
+        }).$promise;
       },
 
-      // Waits for currentUser to resolve before checking if user is logged in
-      isLoggedInAsync: function(cb) {
-        if(currentUser.hasOwnProperty('$promise')) {
-          currentUser.$promise.then(function() {
-            cb(true);
-          }).catch(function() {
-            cb(false);
-          });
-        } else if(currentUser.hasOwnProperty('role')) {
-          cb(true);
-        } else {
-          cb(false);
-        }
+      getImages: function(){
+        return currentUser.img_url;
       },
 
-      // Checks if a user is an admin.
-      // Returns a boolean.
-      isAdmin: function() {
-        return currentUser.role === 'admin';
-      },
-
-      // Gets auth token.
-      getToken: function() {
-        return $cookieStore.get('token');
+      setImages: function(imageUrls){
+        currentUser.img_url = imageUrls[0];
       }
-    };
+    }
   });

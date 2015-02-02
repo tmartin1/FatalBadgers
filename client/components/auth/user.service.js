@@ -1,26 +1,48 @@
 'use strict';
 
 angular.module('badgerApp')
-  .factory('User', function ($resource) {
+  .factory('User', function($resource) {
     // $resource creates a resource object that lets you interact with RESTful server-side data sources.
-    return $resource('/api/users/:id/:controller', {
-      id: '@_id'
-      // TODO /:controller may need to be defined here. If undefined, the url will default to '/api/isers/:id/'
-    },
-    {
-      editProfile: {
-        method: 'POST',
-        params: {
-          controller:'editprofile'
-        }
+    return $resource('/api/user/:controller', {
+        accountType: '@accountType',
+        email: '@email'
       },
-      // This will make a get request to /api/users/me in the /api/user/index.js (default file).
-      // TODO if the server side filepath changes or is not /api/users/me, this (or it) will need updating.
-      get: {
-        method: 'GET',
-        params: {
-          id:'me'
+      {
+        editProfile: {
+          method: 'POST',
+          params: {
+            controller: 'editprofile',
+            name: null,
+            'hourly_rate': null,
+            'img_url': null,
+            'summary': null,
+            skills: null
+          }
+        },
+        signup: {
+          method: 'POST',
+          params: {
+            controller: 'signup',
+            password: null,
+            name: null,
+            'hourly_rate': null,
+            'img_url': null,
+            'summary': null,
+            skills: null
+          }
+        },
+        login: {
+          method: 'POST',
+          params: {
+            controller: 'signin',
+            password: null
+          }
+        },
+        getUser: {
+          method: 'POST',
+          params: {
+            controller: 'getuser'
+          }
         }
-      }
-    });
+      });
   });
